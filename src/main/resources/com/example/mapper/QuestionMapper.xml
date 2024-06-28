@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.QuestionMapper">
+
+    <update id="update">
+        update question
+        <set>
+            <if test="title != null">
+                title = #{title},
+            </if>
+            <if test="likeCount != null">
+                like_count = #{likeCount},
+            </if>
+            <if test="readCount != null">
+                read_count = #{readCount},
+            </if>
+            <if test="collectionCount != null">
+                collection_count = #{collectionCount},
+            </if>
+            <if test="channelId != null">
+                channel_id = #{channelId},
+            </if>
+            <if test="content != null">
+                content = #{content},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            update_time = now()
+        </set>
+        where id = #{id}
+
+    </update>
+
+
+    <resultMap id="FindAllQuestion" type="com.example.pojo.Question">
+        <id property="id" column="id"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="title" column="title"/>
+        <result property="creatorId" column="creator_id"/>
+        <result property="likeCount" column="like_count"/>
+        <result property="readCount" column="read_count"/>
+        <result property="collectionCount" column="collection_count"/>
+        <result property="channelId" column="channel_id"/>
+        <result property="content" column="content"/>
+        <result property="status" column="status"/>
+        <result property="tags" column="tags"/>
+        <!-- 一对多关联映射 -->
+        <collection property="userInfo" ofType="com.example.pojo.UserInfo">
+            <result column="username" property="username"/>
+        </collection>
+        <collection property="channel" ofType="com.example.pojo.Channel">
+            <result column="name" property="name"/>
+        </collection>
+    </resultMap>
+
+<!-- 查询所有question，包含频道和创建者   -->
+    <select id="findAll" resultMap="FindAllQuestion">
+        SELECT q.*, c.name, u.username FROM question q INNER JOIN channel c ON c.id = q.channel_id inner join user_info u on q.creator_id = u.id
+        <where>
+            <if test="channelId != null and channelId != 0">
+                and channel_id = #{channelId}
+            </if>
+            <if test="keyWord != null and keyWord != ''">
+                and title like concat('%', #{keyWord}, '%')
+            </if>
+            <if test="begin != null and end != null">
+                and q.update_time between #{begin} and #{end}
+            </if>
+            <if test="true">
+                and status != 0
+            </if>
+        </where>
+
+        <if test="orderBy != null">
+            order by
+            <choose>
+                <when test="orderBy == 'likeCount'">like_count</when>
+                <when test="orderBy == 'readCount'">read_count</when>
+                <when test="orderBy == 'collectionCount'">collection_count</when>
+                <when test="orderBy == 'updateTime'">update_time</when>
+                <when test="orderBy == 'default'">id</when>
+                <!-- 可以根据需要添加更多允许排序的字段 -->
+            </choose>
+            <if test="orderMethod != null">
+                <choose>
+                    <when test="orderMethod == 'desc'">desc</when>
+                    <otherwise>asc</otherwise>
+                </choose>
+            </if>
+        </if>
+#         SELECT q.*, c.name, u.username
+#         FROM question q
+#                  INNER JOIN channel c ON c.id = q.channel_id
+#                  inner join user_info u on q.creator_id = u.id
+#         where status != 0
+    </select>
+
+</mapper>

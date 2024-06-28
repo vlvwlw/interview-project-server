@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.AnswerMapper">
+
+
+    <select id="findAll" resultType="com.example.pojo.AnswerBean">
+        select * from answers where question_id = #{id} and status != 0
+
+        <if test="orderBy != null">
+            order by
+            <choose>
+                <when test="orderBy == 'hot'">name</when>
+                <when test="orderBy == 'updateTime'">update_time</when>
+                <when test="orderBy == 'default'">id</when>
+                <!-- 可以根据需要添加更多允许排序的字段 -->
+            </choose>
+            <if test="orderMethod != null">
+                <choose>
+                    <when test="orderMethod == 'desc'">desc</when>
+                    <otherwise>asc</otherwise>
+                </choose>
+            </if>
+        </if>
+
+    </select>
+</mapper>
